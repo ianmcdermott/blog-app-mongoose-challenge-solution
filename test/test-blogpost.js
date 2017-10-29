@@ -1,7 +1,7 @@
-const faker = require('./faker');
-const mongoose = require('./mongoose');
-const chai = require('./chai');
-const chaiHttp = require('./chai-http');
+const faker = require('../node_modules/faker');
+const mongoose = require('../node_modules/mongoose');
+const chai = require('../node_modules/chai');
+const chaiHttp = require('../node_modules/chai-http');
 
 const should = chai.should
 
@@ -27,7 +27,7 @@ function generateBlogPostData(){
 		name: {
 			firstName: faker.name.firstName(),
 			lastName: faker.name.lastName()	
-		} 
+		},
 		content: faker.lorem.sentence(),
 		title: faker.lorem.words(),
 		date: faker.data.past()
@@ -39,7 +39,7 @@ function tearDownDb(){
 	return mongoose.connection.dropDatabase();
 }
 
-describe('BlogPosts API resource' function(){
+describe('BlogPosts API resource', function(){
 
 	describe('BlogPost API resource', function(){
 		before(function(){
@@ -158,7 +158,7 @@ describe('BlogPosts API resource' function(){
 				};
 
 			return blogPost
-				.findOne();
+				.findOne()
 				.then(function(blogpost){
 					updateData.id = blogpost.id;
 
