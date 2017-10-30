@@ -1,9 +1,9 @@
-const faker = require('../node_modules/faker');
-const mongoose = require('../node_modules/mongoose');
-const chai = require('../node_modules/chai');
-const chaiHttp = require('../node_modules/chai-http');
+const faker = require('faker');
+const mongoose = require('mongoose');
+const chai = require('chai');
+const chaiHttp = require('chai-http');
 
-const should = chai.should
+const should = chai.should();
 
 const {BlogPost} = require('../models')
 const {app, runServer, closeServer} = require('../server');
@@ -13,122 +13,120 @@ chai.use(chaiHttp);
 
 function seedBlogPostData(){
 	console.info('seeding blogpost data');
-	const seedBlogPost = [];
+	const seedData = [];
 
-	for(let i = 0; i <= 10; i++){
-		seedBlogPost.push(generateBlogPostData());
+	for(let i = 1; i <= 10; i++){
+		seedData.push(generateBlogPostData());
 	}
-
 	return BlogPost.insertMany(seedData);
 }
 
 function generateBlogPostData(){
 	return{
-		name: {
+		author: {
 			firstName: faker.name.firstName(),
 			lastName: faker.name.lastName()	
 		},
 		content: faker.lorem.sentence(),
 		title: faker.lorem.words(),
-		date: faker.data.past()
 	}
 }
 
 function tearDownDb(){
 	console.warn("Deleting database");
-	return mongoose.connection.dropDatabase();
+	return new Promise((res, rej) => {
+		mongoose.connection.dropDatabase()
+			.then(result => res(result))
+			.catch(err => rej(err))
+	});
 }
 
 describe('BlogPosts API resource', function(){
 
-	describe('BlogPost API resource', function(){
-		before(function(){
-			return runserver(TEST_DATABASE_URL);
-		});
+	before(function(){
+		return runServer(TEST_DATABASE_URL);
+	});
 
-		beforeEach(function(){
-			return seedBlogPostData();
-		});
+	beforeEach(function(){
+		return seedBlogPostData();
+	});
 
-		afterEach(function(){
-			return tearDownDb();
-		});
+	afterEach(function(){
+		return tearDownDb();
+	});
 
-		after(function(){
-			return closeServer();
-		});
-	})
+	after(function(){
+		return closeServer();
+	});
+	
 
 	describe('GET endpoint', function(){
 		it("Should return all existing blogposts", function(){
 			//declare res here to access across then calls
 			let res;
 			return chai.request(app)
-			//get back all blogposts returned by endpoint /blogPostRouter
-				.get('/blogposts')
+			//get back all blogposts returned by endpoint /blogpostRouter
+				.get('/posts')
 				.then(function(_res){
 					res = _res;
 					//prove response has correct status and types
 					res.should.have.status(200);
-					res.should.be.json;
-					res.body.length.should.be.at.least(1);
-
+ 					res.body.should.have.length.of.at.least(1);
 					return BlogPost.count();
 				})
 				.then(function(count){
-					res.body.blogposts.should.have.a.length.of(count);
-				});
+ 					res.body.should.have.length.of(count);
+ 				});
 		});
+
 
 		it('Should return blogposts with the right fields', function(){
 			let resBlogPost;
 
 			return chai.request(app)
-				.get('/blogposts')
+				.get('/posts')
 				.then(function(res){
 					res.should.have.status(200);
 					res.should.be.json;
 					res.body.should.be.a('array');
-					res.body.blogposts.should.have.length.of.at.least(1);
+					res.body.should.have.length.of.at.least(1);
 
-					res.body.blogposts.forEach(function(blogpost){
+					res.body.forEach(function(blogpost){
 						blogpost.should.be.a('object');
-						res.should.include.keys(
-							'id', 'author', 'title', 'content', 'date'
-							);
+						blogpost.should.include.keys(
+							'id', 'author', 'title', 'content', 'created');
 					});
-					resBlogPost = res.body.blogposts[0];
+					resBlogPost = res.body[0];
 					return BlogPost.findById(resBlogPost.id);
 				})
 
 				.then(function(blogpost){
-					resBlogPost.id.should.equal(blogpost.id);
-					resBlogPost.author.should.contain(blogpost.author.firstName);
+					resBlogPost.author.should.equal(blogpost.authorName);
 					resBlogPost.title.should.equal(blogpost.title);
-					resBlogPost.content.should.equal(blogpost.content);
-					resBlogPost.date.should.equal(blogpost.date);
-					
+					resBlogPost.content.should.equal(blogpost.content);					
 				});
 
+			});
 		});
-	});
+
 
 	describe('POST endpoint', function(){
 		it("Should add blogpost to DB", function(){
 			const newBlogPost = generateBlogPostData();
 
 			return chai.request(app)
-				.post('/blogposts')
+				.post('/posts')
 				.send(newBlogPost)
-				.then(function(){
+				.then(function(res){
 					res.should.have.status(201);
 					res.should.be.json;
 					res.body.should.be.a('object');
-					res.body.author.should.contain(newBlogPost.author.firstName);
-					res.body.id.should.not.be.null;
+					res.body.should.include.keys('id', 'title', 'content', 'author', 'created');
 					res.body.title.should.equal(newBlogPost.title);
-					res.body.content.should.equal(newBlogPost.content);
-
+					res.body.content.should.equal(newBlogPost.content)
+          			res.body.author.should.equal(`${newBlogPost.author.firstName} ${newBlogPost.author.lastName}`);
+					res.body.id.should.not.be.null;
+			
 					return BlogPost.findById(res.body.id);
 
 				})
@@ -148,30 +146,31 @@ describe('BlogPosts API resource', function(){
 	describe('PUT endpoint', function(){
 		it("Should update blogpost in DB", function(){
 			const updateData = {
-
 				  author: {
 				    firstName: "Mel",
 				    lastName: "Brookes"
 				  },
 				  title: "Brooky Wooks",
-				  content: "Brooky Bricky Whicky Wooks",
+				  content: "Brooky Bricky Whicky Wooks" 
 				};
 
-			return blogPost
+			return BlogPost
 				.findOne()
 				.then(function(blogpost){
 					updateData.id = blogpost.id;
 
 					return chai.request(app)
-						.put(`blogposts/${blogpost.id}`)
+						.put(`/posts/${blogpost.id}`)
 						.send(updateData);
 				})
 				//make sure proper status, no content
 				.then(function(res){
 					res.should.have.status(204);
+					return BlogPost.findById(updateData.id);
 				})
 				.then(function(blogpost){
 					blogpost.author.firstName.should.equal(updateData.author.firstName);
+					blogpost.author.lastName.should.equal(updateData.author.lastName);
 					blogpost.content.should.equal(updateData.content);
 					blogpost.title.should.equal(updateData.title);
 
@@ -188,7 +187,7 @@ describe('BlogPosts API resource', function(){
 				.findOne()
 				.then(function(_blogpost){
 					blogpost = _blogpost;
-					return chai.request(app).delete(`/blogpost/${blogpost.id}`);
+					return chai.request(app).delete(`/posts/${blogpost.id}`);
 				})
 				//make sure proper status, no content
 				.then(function(res){
