@@ -1,0 +1,7 @@
+deploy:
+  provider: heroku
+  api_key:
+    secure: n6d80SQRk+HwHECDX/kmxGTGl7oet4eXlKUpWB5PEp5sJ5xuMyr3UlcL00xoTrcOPy3pDghF0/J/i9Xz/GSujB7PUTPodkxc+vlSilhq3Pobw5YZg0AnTPDmMI1et6D75wHl3H1LNe6Hj8NOKnHxQNAKM50K+G6EcV7iILEts7kZjAoywAORrDQpKyslQkeUHQp85PkcMmQkZVX7igZtV/d2BgpQn+cNfkIST520mIkEq0fnPuODARnHNV5nUC1sypTlb2NPIHdSYdHYzaXUHnRee9CXGmehoqGYNTE/wWH4JxO+yQr35U3UqUwjy5KMjYBIMEb3ZsdnYkMrylyB+sUxXxB+KpiMlfDqHKaQfHqew1GAa9M+FqF14cgVKlHC2760b0oj9L/Bu6g0Ps4CVIws/UoMxOYtgLQicW2rfrxsCQypGiTnzTBtyM1SlGVySGCxwabiNQkE4VuF8wEhIdqOoDrAnWqHN5+MnvcxGwDN+nyy5cyPu++cgbbcQotLhtBA+bqIk0SPHz7VDLXs2OYJrq4lcfB2mWnuKMBiXSj7LFwCBM9NsLI2uJxWykwaRvUtOyn2CPLY7Kzn1TR4ypkK8Z4KhJ5McYc0jm/Uv8J0Nyu56m9Z9nhVUlZ0kLk0EAj6LxG4/j1i/NK32zJb5kG+ldQn/g+Wdlxw9ZhvURM=
+  app: safe-atoll-46112
+  on:
+    repo: ianmcdermott/blog-app-mongoose-challenge-solution
